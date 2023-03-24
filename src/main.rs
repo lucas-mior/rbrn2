@@ -6,6 +6,7 @@ use std::{
     process::{self, Command, Stdio},
     ffi::CString,
 };
+use std::collections::HashMap;
 
 fn main() -> io::Result<()> {
     let old_files = get_files_in_directory(".")?;
@@ -14,7 +15,12 @@ fn main() -> io::Result<()> {
     open_file_in_vim(&tmp_file_path)?;
     let new_files = read_lines_from_file(&tmp_file_path)?;
 
-    if verify(&old_files, &new_files) {
+    if !verify(&old_files, &new_files) {
+        println!("Lenghts differ");
+        process::exit(1);
+    }
+    if has_duplicates(&new_files) {
+        println!("has duplicates!!!");
         process::exit(1);
     }
     rename_files(&old_files, &new_files)?;
@@ -96,6 +102,20 @@ fn verify<T>(a: &[T], b: &[T]) -> bool {
     if a.len() != b.len() {
         return false;
     }
-    
+
     return true;
+}
+
+fn has_duplicates<T: AsRef<str>>(v: &[T]) -> bool {
+    let mut map = HashMap::new();
+
+    for s in v {
+        let count = map.entry(s.as_ref()).or_insert(0);
+        *count += 1;
+        if *count > 1 {
+            return true;
+        }
+    }
+
+    false
 }
