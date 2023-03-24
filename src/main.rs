@@ -3,7 +3,7 @@ use std::{
     fs::{self, read_dir, remove_file, File, rename},
     io::{self, BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
+    process::{self, Command, Stdio},
     ffi::CString,
 };
 
@@ -14,6 +14,9 @@ fn main() -> io::Result<()> {
     open_file_in_vim(&tmp_file_path)?;
     let new_files = read_lines_from_file(&tmp_file_path)?;
 
+    if verify(&old_files, &new_files) {
+        process::exit(1);
+    }
     rename_files(&old_files, &new_files)?;
 
     remove_file(&tmp_file_path)?;
@@ -87,4 +90,12 @@ fn rename_files(old_files: &[String], new_files: &[String]) -> io::Result<()> {
             println!("Renamed file from {} to {}", old_file, new_file);
             Ok(())
         })
+}
+
+fn verify<T>(a: &[T], b: &[T]) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    
+    return true;
 }
