@@ -108,10 +108,8 @@ fn rename(old_path: &str, new_path: &str) -> std::io::Result<()> {
     let new_cstr = CString::new(new_path.as_bytes())?;
     let result = unsafe {
         libc::renameat2(
-            libc::AT_FDCWD,
-            old_cstr.as_ptr(),
-            libc::AT_FDCWD,
-            new_cstr.as_ptr(),
+            libc::AT_FDCWD, old_cstr.as_ptr(),
+            libc::AT_FDCWD, new_cstr.as_ptr(),
             libc::RENAME_EXCHANGE
         )
     };
