@@ -1,12 +1,11 @@
-use rand::{self, Rng, distributions::Alphanumeric};
+use rand::{Rng, distributions::Alphanumeric};
 use std::{
     fs::{self, File},
-    io::{self, Write},
+    io::{self, BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
     process::{Command, Stdio},
+    ffi::CString,
 };
-use std::io::{BufRead, BufReader, Result};
-use std::ffi::CString;
 
 fn main() -> io::Result<()> {
     let path = Path::new(".");
