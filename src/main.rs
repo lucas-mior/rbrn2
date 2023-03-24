@@ -6,6 +6,9 @@ use std::{
     process::{Command, Stdio},
 };
 use std::io::{BufRead, BufReader, Result};
+use std::os::unix::ffi::OsStrExt;
+use std::ffi::CString;
+use std::os::raw::{c_int, c_char};
 
 fn main() -> io::Result<()> {
     let path = Path::new(".");
@@ -93,9 +96,30 @@ fn rename_files(oldfiles: &[String], newfiles: &[String]) -> io::Result<()> {
         // Check if the filenames are different
         if oldfile != newfile {
             // Rename the file
-            fs::rename(&oldfile, &newfile)?;
+            rename(&oldfile, &newfile)?;
             println!("Renamed file from {} to {}", oldfile, newfile);
         }
     }
+    Ok(())
+}
+
+fn rename(old_path: &str, new_path: &str) -> std::io::Result<()> {
+    let old_cstr = CString::new(old_path.as_bytes())?;
+    let new_cstr = CString::new(new_path.as_bytes())?;
+    let result = unsafe {
+        libc::renameat2(
+            libc::AT_FDCWD,
+            old_cstr.as_ptr(),
+            libc::AT_FDCWD,
+            new_cstr.as_ptr(),
+            libc::RENAME_EXCHANGE
+        )
+    };
+
+    if result == -1 {
+        // fallback to using standard rename function
+        std::fs::rename(old_path, new_path)?;
+    }
+
     Ok(())
 }
