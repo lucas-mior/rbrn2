@@ -8,19 +8,19 @@ use std::{
 
 fn main() {
     let path = Path::new(".");
-    let mut files_and_dirs = vec![];
+    let mut oldfiles = vec![];
 
     for entry in fs::read_dir(path).unwrap() {
         let entry = entry.unwrap();
         let file_path = entry.path();
         if file_path.is_file() || file_path.is_dir() {
-            files_and_dirs.push(file_path.to_string_lossy().into_owned());
+            oldfiles.push(file_path.to_string_lossy().into_owned());
         }
     }
 
-    println!("{:?}", files_and_dirs);
+    println!("{:?}", oldfiles);
 
-    let a = write_filenames_to_tmpfile(&files_and_dirs).unwrap();
+    let a = write_filenames_to_tmpfile(&oldfiles).unwrap();
     println!("a = {}", a.display());
     open_file_in_vim(&a);
     fs::remove_file(&a).expect("Failed to remove file");
