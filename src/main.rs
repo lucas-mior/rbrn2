@@ -5,6 +5,7 @@ use std::{
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
+use std::io::{BufRead, BufReader, Result};
 
 fn main() -> io::Result<()> {
     let path = Path::new(".");
@@ -17,12 +18,15 @@ fn main() -> io::Result<()> {
         }
     }
 
-    println!("{:?}", oldfiles);
+    println!("oldfiles {:?}", oldfiles);
 
     let tmpfile_path = write_filenames_to_tmpfile(&oldfiles)?;
     println!("tmpfile_path = {}", tmpfile_path.display());
     open_file_in_vim(&tmpfile_path)?;
-    fs::remove_file(&tmpfile_path)?;
+    // fs::remove_file(&tmpfile_path)?;
+    let newfiles = read_lines_from_file(&tmpfile_path)?;
+
+    println!("newfiles: {:?}", newfiles);
 
     Ok(())
 }
@@ -69,4 +73,14 @@ fn open_file_in_vim<T: AsRef<Path>>(filename: T) -> io::Result<()> {
     }
 
     Ok(())
+}
+
+fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
+    let file = File::open(file_path)?;
+    let reader = BufReader::new(file);
+    let mut lines = Vec::new();
+    for line in reader.lines() {
+        lines.push(line?.trim().to_string());
+    }
+    Ok(lines)
 }
