@@ -3,7 +3,7 @@ use std::{
     fs::{self, File},
     io::{self, Write},
     path::{Path, PathBuf},
-    process::{self, Command, Stdio},
+    process::{Command, Stdio},
 };
 
 fn main() -> io::Result<()> {
