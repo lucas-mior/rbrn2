@@ -1,10 +1,9 @@
 use rand::{Rng, distributions::Alphanumeric};
 use std::{
-    fs::{self, read_dir, remove_file, File, rename},
+    fs::{read_dir, remove_file, File, rename},
     io::{self, BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
-    ffi::CString,
 };
 use std::collections::HashMap;
 
