@@ -1,32 +1,33 @@
-use rand::{Rng, distributions::Alphanumeric};
+use rand::{self, Rng, distributions::Alphanumeric};
 use std::{
     fs::{self, File},
-    io::{Result, Write},
+    io::{self, Write},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
+    process::{self, Command, Stdio},
 };
 
-fn main() {
+fn main() -> io::Result<()> {
     let path = Path::new(".");
     let mut oldfiles = vec![];
 
-    for entry in fs::read_dir(path).unwrap() {
-        let entry = entry.unwrap();
-        let file_path = entry.path();
+    for entry in fs::read_dir(path)? {
+        let file_path = entry?.path();
         if file_path.is_file() || file_path.is_dir() {
-            oldfiles.push(file_path.to_string_lossy().into_owned());
+            oldfiles.push(file_path.to_string_lossy().to_string());
         }
     }
 
     println!("{:?}", oldfiles);
 
-    let a = write_filenames_to_tmpfile(&oldfiles).unwrap();
-    println!("a = {}", a.display());
-    open_file_in_vim(&a);
-    fs::remove_file(&a).expect("Failed to remove file");
+    let tmpfile_path = write_filenames_to_tmpfile(&oldfiles)?;
+    println!("tmpfile_path = {}", tmpfile_path.display());
+    open_file_in_vim(&tmpfile_path)?;
+    fs::remove_file(&tmpfile_path)?;
+
+    Ok(())
 }
 
-fn write_filenames_to_tmpfile(lines: &Vec<String>) -> Result<PathBuf> {
+fn write_filenames_to_tmpfile(lines: &[String]) -> io::Result<PathBuf> {
     // Generate a random filename using the `rand` crate
     let mut rng = rand::thread_rng();
     let filename: String = std::iter::repeat(())
@@ -50,19 +51,22 @@ fn write_filenames_to_tmpfile(lines: &Vec<String>) -> Result<PathBuf> {
     Ok(file_path)
 }
 
-fn open_file_in_vim<T: AsRef<Path>>(filename: T) {
+fn open_file_in_vim<T: AsRef<Path>>(filename: T) -> io::Result<()> {
     let filename_str = filename.as_ref().to_str().unwrap();
 
-    let mut command = Command::new("vim")
+    let status = Command::new("vim")
         .arg(filename_str)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
-        .spawn()
-        .unwrap();
+        .status()?;
 
-    let status = command.wait().unwrap();
     if !status.success() {
-        panic!("vim exited with non-zero status: {}", status);
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            format!("vim exited with non-zero status: {}", status),
+        ));
     }
+
+    Ok(())
 }
