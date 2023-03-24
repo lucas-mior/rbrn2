@@ -34,7 +34,6 @@ fn main() -> io::Result<()> {
 }
 
 fn write_filenames_to_tmpfile(lines: &[String]) -> io::Result<PathBuf> {
-    // Generate a random filename using the `rand` crate
     let mut rng = rand::thread_rng();
     let filename: String = std::iter::repeat(())
         .map(|()| rng.sample(Alphanumeric) as char)
@@ -42,18 +41,14 @@ fn write_filenames_to_tmpfile(lines: &[String]) -> io::Result<PathBuf> {
         .collect();
     let file_path = PathBuf::from(format!("/tmp/rbrn2_{}", filename));
 
-    // Open a new file for writing
     let mut file = File::create(&file_path)?;
 
-    // Iterate over the lines and write each line to the file
     for line in lines {
         writeln!(file, "{}", line)?;
     }
 
-    // Flush the file to ensure all the data is written
     file.flush()?;
 
-    // Return the path of the written file
     Ok(file_path)
 }
 
@@ -88,11 +83,8 @@ fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
 }
 
 fn rename_files(oldfiles: &[String], newfiles: &[String]) -> io::Result<()> {
-    // Iterate over the oldfiles and newfiles vectors
     for (oldfile, newfile) in oldfiles.iter().zip(newfiles) {
-        // Check if the filenames are different
         if oldfile != newfile {
-            // Rename the file
             rename(&oldfile, &newfile)?;
             println!("Renamed file from {} to {}", oldfile, newfile);
         }
@@ -112,7 +104,6 @@ fn rename(old_path: &str, new_path: &str) -> std::io::Result<()> {
     };
 
     if result < 0 {
-        // fallback to using standard rename function
         std::fs::rename(old_path, new_path)?;
     }
 
