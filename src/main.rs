@@ -1,11 +1,10 @@
-use rand::Rng;
-use rand::distributions::Alphanumeric;
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::io::{Result, Write};
-use std::fs::{File, OpenOptions};
-use tempfile::NamedTempFile;
-use std::process::{Command, Stdio};
+use rand::{Rng, distributions::Alphanumeric};
+use std::{
+    fs::{self, File},
+    io::{Result, Write},
+    path::{Path, PathBuf},
+    process::{Command, Stdio},
+};
 
 fn main() {
     let path = Path::new(".");
@@ -23,7 +22,8 @@ fn main() {
 
     let a = write_filenames_to_tmpfile(&files_and_dirs).unwrap();
     println!("a = {}", a.display());
-    // open_file_in_vim(&a);
+    open_file_in_vim(&a);
+    fs::remove_file(&a).expect("Failed to remove file");
 }
 
 fn write_filenames_to_tmpfile(lines: &Vec<String>) -> Result<PathBuf> {
@@ -33,7 +33,7 @@ fn write_filenames_to_tmpfile(lines: &Vec<String>) -> Result<PathBuf> {
         .map(|()| rng.sample(Alphanumeric) as char)
         .take(8)
         .collect();
-    let file_path = PathBuf::from(format!("/tmp/{}", filename));
+    let file_path = PathBuf::from(format!("/tmp/rbrn2_{}", filename));
 
     // Open a new file for writing
     let mut file = File::create(&file_path)?;
@@ -50,13 +50,19 @@ fn write_filenames_to_tmpfile(lines: &Vec<String>) -> Result<PathBuf> {
     Ok(file_path)
 }
 
-fn open_file_in_vim(filename: &str) {
-    let mut vim_command = Command::new("vim");
-    vim_command.arg(filename);
-    vim_command.stdin(Stdio::inherit());
-    vim_command.stdout(Stdio::inherit());
-    vim_command.stderr(Stdio::inherit());
+fn open_file_in_vim<T: AsRef<Path>>(filename: T) {
+    let filename_str = filename.as_ref().to_str().unwrap();
 
-    let mut vim_process = vim_command.spawn().unwrap();
-    vim_process.wait().unwrap();
+    let mut command = Command::new("vim")
+        .arg(filename_str)
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()
+        .unwrap();
+
+    let status = command.wait().unwrap();
+    if !status.success() {
+        panic!("vim exited with non-zero status: {}", status);
+    }
 }
