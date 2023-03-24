@@ -111,7 +111,7 @@ fn rename(old_path: &str, new_path: &str) -> std::io::Result<()> {
         )
     };
 
-    if result == -1 {
+    if result < 0 {
         // fallback to using standard rename function
         std::fs::rename(old_path, new_path)?;
     }
