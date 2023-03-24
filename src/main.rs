@@ -6,9 +6,7 @@ use std::{
     process::{Command, Stdio},
 };
 use std::io::{BufRead, BufReader, Result};
-use std::os::unix::ffi::OsStrExt;
 use std::ffi::CString;
-use std::os::raw::{c_int, c_char};
 
 fn main() -> io::Result<()> {
     let path = Path::new(".");
