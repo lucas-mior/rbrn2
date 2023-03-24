@@ -23,13 +23,13 @@ fn main() -> io::Result<()> {
     let tmpfile_path = write_filenames_to_tmpfile(&oldfiles)?;
     println!("tmpfile_path = {}", tmpfile_path.display());
     open_file_in_vim(&tmpfile_path)?;
-    // fs::remove_file(&tmpfile_path)?;
     let newfiles = read_lines_from_file(&tmpfile_path)?;
 
     println!("newfiles: {:?}", newfiles);
 
     rename_files(&oldfiles, &newfiles)?;
 
+    fs::remove_file(&tmpfile_path)?;
     Ok(())
 }
 
