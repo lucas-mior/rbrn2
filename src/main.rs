@@ -28,6 +28,8 @@ fn main() -> io::Result<()> {
 
     println!("newfiles: {:?}", newfiles);
 
+    rename_files(&oldfiles, &newfiles)?;
+
     Ok(())
 }
 
@@ -83,4 +85,17 @@ fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
         lines.push(line?.trim().to_string());
     }
     Ok(lines)
+}
+
+fn rename_files(oldfiles: &[String], newfiles: &[String]) -> io::Result<()> {
+    // Iterate over the oldfiles and newfiles vectors
+    for (oldfile, newfile) in oldfiles.iter().zip(newfiles) {
+        // Check if the filenames are different
+        if oldfile != newfile {
+            // Rename the file
+            fs::rename(&oldfile, &newfile)?;
+            println!("Renamed file from {} to {}", oldfile, newfile);
+        }
+    }
+    Ok(())
 }
