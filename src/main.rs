@@ -1,14 +1,38 @@
 use rand::{Rng, distributions::Alphanumeric};
 use std::{
     fs::{read_dir, remove_file, File, rename},
-    io::{self, BufRead, BufReader, Result, Write},
+    io::{self, BufRead, BufReader, Result, Write, stdout, stderr},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
+    collections::HashMap,
 };
-use std::collections::HashMap;
+
+fn usage(stream: &mut dyn Write) {
+    writeln!(stream, "usage: brn2 [--help | <filename>]").unwrap();
+    writeln!(stream, "Without arguments, rename files in current dir.").unwrap();
+    writeln!(stream, "<filename>, rename files listed in <filename>.").unwrap();
+    writeln!(stream, "--help : display this help message.").unwrap();
+    writeln!(stream, "Be sure to have EDITOR or VISUAL environment variables properly set.").unwrap();
+    process::exit(if stream as *const _ == &std::io::stdout() as *const _ { 0 } else { 1 });
+}
 
 fn main() -> io::Result<()> {
-    let old_files = get_files_in_directory(".")?;
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let old_files;
+    if args.len() == 0 {
+        old_files = get_files_in_directory(".")?;
+    } else if args.len() == 1 {
+        match args[0].as_str() {
+            "-h" | "--help" => { 
+                usage(&mut stdout());
+                process::exit(0);
+            },
+            _ => old_files = read_lines_from_file(&args[0])?,
+        };
+    } else {
+        usage(&mut stderr());
+        process::exit(1);
+    }
 
     let tmp_file = write_filenames_to_tmpfile(&old_files)?;
     open_file_in_vim(&tmp_file)?;
