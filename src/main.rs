@@ -139,7 +139,7 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
 
             for j in i+1..oldfiles.len() {
                 if oldfiles[j] == newfiles[i] {
-                    oldfiles[j] = oldfiles[i].clone();
+                    oldfiles.swap(j, i);
                     println!("{} -> {GREEN}{}{RESET}", newfiles[i], oldfiles[i]);
                 }
             }
