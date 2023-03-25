@@ -44,11 +44,15 @@ fn main() -> io::Result<()> {
     let newfiles = read_lines_from_file(&tmp_file)?;
 
     if oldfiles.len() != newfiles.len() {
-        println!("Lenghts differ");
+        eprintln!(
+            "You are renaming {} file{} but buffer contains {} file name{}",
+            oldfiles.len(), if oldfiles.len() == 1 { "" } else { "s" },
+            newfiles.len(), if newfiles.len() == 1 { "" } else { "s" }
+        );
         process::exit(1);
     }
     if has_duplicates(&newfiles) {
-        println!("has duplicates!!!");
+        eprintln!("Since there are duplicated names in the buffer, no files will be renamed.");
         process::exit(1);
     }
     rename_files(&mut oldfiles, &newfiles)?;
