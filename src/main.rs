@@ -17,6 +17,10 @@ fn usage(stream: &mut dyn Write) {
     process::exit(if stream as *const _ == &std::io::stdout() as *const _ { 0 } else { 1 });
 }
 
+const RESET: &str = "\x1b[0m";
+const GREEN: &str = "\x1b[32m";
+const RED: &str = "\x1b[31m";
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut oldfiles;
@@ -128,12 +132,12 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
                             libc::RENAME_EXCHANGE)
         };
         if result >= 0 {
-            println!("{oldname} ->\x1b[32m {newname}\x1b[0m");
+            println!("{oldname} -> {GREEN}{newname}{RESET}");
 
             for j in i+1..oldfiles.len() {
                 if oldfiles[j] == newfiles[i] {
                     oldfiles[j] = oldfiles[i].clone();
-                    println!("{} ->\x1b[32m {}\x1b[0m", newfiles[i], oldfiles[i]);
+                    println!("{} -> {GREEN}{}{RESET}", newfiles[i], oldfiles[i]);
                 }
             }
         } else {
@@ -142,7 +146,7 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
                 eprintln!("Error renaming {} to {}: {}", &oldfiles[i], &newfiles[i], e);
                 continue;
             }
-            println!("{oldname} ->\x1b[32m {newname}\x1b[0m");
+            println!("{oldname} -> {GREEN}{newname}{RESET}");
         }
     }
     Ok(())
