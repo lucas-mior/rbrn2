@@ -18,7 +18,7 @@ fn usage(stream: &mut dyn Write) {
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let old_files;
+    let mut old_files;
     if args.len() == 0 {
         old_files = get_files_in_directory(".")?;
     } else if args.len() == 1 {
@@ -36,7 +36,7 @@ fn main() -> io::Result<()> {
 
     let tmp_file = write_filenames_to_tmpfile(&old_files)?;
     open_file_in_vim(&tmp_file)?;
-    let new_files = read_lines_from_file(&tmp_file)?;
+    let mut new_files = read_lines_from_file(&tmp_file)?;
 
     if old_files.len() != new_files.len() {
         println!("Lenghts differ");
