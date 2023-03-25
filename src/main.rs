@@ -10,11 +10,11 @@ use std::collections::HashMap;
 fn main() -> io::Result<()> {
     let old_files = get_files_in_directory(".")?;
 
-    let tmp_file_path = write_filenames_to_tmpfile(&old_files)?;
-    open_file_in_vim(&tmp_file_path)?;
-    let new_files = read_lines_from_file(&tmp_file_path)?;
+    let tmp_file = write_filenames_to_tmpfile(&old_files)?;
+    open_file_in_vim(&tmp_file)?;
+    let new_files = read_lines_from_file(&tmp_file)?;
 
-    if !verify(&old_files, &new_files) {
+    if old_files.len() != new_files.len() {
         println!("Lenghts differ");
         process::exit(1);
     }
@@ -24,7 +24,7 @@ fn main() -> io::Result<()> {
     }
     rename_files(&old_files, &new_files)?;
 
-    remove_file(&tmp_file_path)?;
+    remove_file(&tmp_file)?;
     Ok(())
 }
 
@@ -95,14 +95,6 @@ fn rename_files(old_files: &[String], new_files: &[String]) -> io::Result<()> {
             println!("Renamed file from {} to {}", old_file, new_file);
             Ok(())
         })
-}
-
-fn verify<T>(a: &[T], b: &[T]) -> bool {
-    if a.len() != b.len() {
-        return false;
-    }
-
-    return true;
 }
 
 fn has_duplicates<T: AsRef<str>>(v: &[T]) -> bool {
