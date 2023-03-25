@@ -18,6 +18,7 @@ fn usage(stream: &mut dyn Write) {
 }
 
 const RESET: &str = "\x1b[0m";
+const RED: &str = "\x1b[31m";
 const GREEN: &str = "\x1b[32m";
 
 fn main() -> io::Result<()> {
@@ -165,7 +166,7 @@ fn has_duplicates<T: AsRef<str>>(v: &[T]) -> bool {
         let count = map.entry(s.as_ref()).or_insert(0);
         *count += 1;
         if *count > 1 {
-            eprintln!("{} appers more than once in the buffer", s.as_ref());
+            eprintln!("{RED}{}{RESET} appers more than once in the buffer", s.as_ref());
             dup = true;
         }
     }
