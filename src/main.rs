@@ -128,11 +128,12 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
                             libc::RENAME_EXCHANGE)
         };
         if result >= 0 {
-            println!("{oldname} ->\x1b[32m {newname}");
+            println!("{oldname} ->\x1b[32m {newname}\x1b[0m");
 
             for j in i+1..oldfiles.len() {
                 if oldfiles[j] == newfiles[i] {
                     oldfiles[j] = oldfiles[i].clone();
+                    println!("{} ->\x1b[32m {}\x1b[0m", newfiles[i], oldfiles[i]);
                 }
             }
         } else {
@@ -141,13 +142,7 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
                 eprintln!("Error renaming {} to {}: {}", &oldfiles[i], &newfiles[i], e);
                 continue;
             }
-            println!("Renamed file from {} to {} using rename", oldfiles[i], newfiles[i]);
-
-            for j in i+1..oldfiles.len() {
-                if oldfiles[j] == newfiles[i] {
-                    oldfiles[j] = oldfiles[i].clone();
-                }
-            }
+            println!("{oldname} ->\x1b[32m {newname}\x1b[0m");
         }
     }
     Ok(())
