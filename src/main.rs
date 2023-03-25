@@ -5,8 +5,8 @@ use std::{
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
     collections::HashMap,
+    ffi::CString,
 };
-use std::ffi::CString;
 
 fn usage(stream: &mut dyn Write) {
     writeln!(stream, "usage: brn2 [--help | <filename>]").unwrap();
@@ -113,6 +113,8 @@ fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
 
 fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
     for i in 0..oldfiles.len() {
+        let oldname = &oldfiles[i];
+        let newname = &newfiles[i];
         if oldfiles[i] == newfiles[i] {
             continue;
         }
@@ -126,7 +128,7 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
                             libc::RENAME_EXCHANGE)
         };
         if result >= 0 {
-            println!("Renamed file from {} to {} using renameat2", oldfiles[i], newfiles[i]);
+            println!("{oldname} ->\x1b[32m {newname}");
 
             for j in i+1..oldfiles.len() {
                 if oldfiles[j] == newfiles[i] {
