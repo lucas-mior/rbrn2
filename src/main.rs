@@ -1,11 +1,11 @@
-use rand::{Rng, distributions::Alphanumeric};
+use rand::{distributions::Alphanumeric, Rng};
 use std::{
-    fs::{read_dir, remove_file, File, rename},
-    io::{self, BufRead, BufReader, Result, Write, stdout, stderr},
-    path::{Path, PathBuf},
-    process::{self, Command, Stdio},
     collections::HashMap,
     ffi::CString,
+    fs::{read_dir, remove_file, rename, File},
+    io::{self, stderr, stdout, BufRead, BufReader, Result, Write},
+    path::{Path, PathBuf},
+    process::{self, Command, Stdio},
 };
 
 fn usage(stream: &mut dyn Write) {
@@ -13,8 +13,16 @@ fn usage(stream: &mut dyn Write) {
     writeln!(stream, "Without arguments, rename files in current dir.").unwrap();
     writeln!(stream, "<filename>, rename files listed in <filename>.").unwrap();
     writeln!(stream, "--help : display this help message.").unwrap();
-    writeln!(stream, "Be sure to have EDITOR or VISUAL environment variables properly set.").unwrap();
-    process::exit(if stream as *const _ == &std::io::stdout() as *const _ { 0 } else { 1 });
+    writeln!(
+        stream,
+        "Be sure to have EDITOR or VISUAL environment variables properly set."
+    )
+    .unwrap();
+    process::exit(if stream as *const _ == &std::io::stdout() as *const _ {
+        0
+    } else {
+        1
+    });
 }
 
 const RESET: &str = "\x1b[0m";
@@ -27,10 +35,10 @@ fn main() -> io::Result<()> {
         oldfiles = get_files_in_directory(".")?;
     } else if args.len() == 1 {
         match args[0].as_str() {
-            "-h" | "--help" => { 
+            "-h" | "--help" => {
                 usage(&mut stdout());
                 process::exit(0);
-            },
+            }
             _ => oldfiles = read_lines_from_file(&args[0])?,
         };
     } else {
@@ -45,8 +53,10 @@ fn main() -> io::Result<()> {
     if oldfiles.len() != newfiles.len() {
         eprintln!(
             "You are renaming {} file{} but buffer contains {} file name{}",
-            oldfiles.len(), if oldfiles.len() == 1 { "" } else { "s" },
-            newfiles.len(), if newfiles.len() == 1 { "" } else { "s" }
+            oldfiles.len(),
+            if oldfiles.len() == 1 { "" } else { "s" },
+            newfiles.len(),
+            if newfiles.len() == 1 { "" } else { "s" }
         );
         process::exit(1);
     }
@@ -118,7 +128,7 @@ fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
     Ok(lines)
 }
 
-fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
+fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> Result<()> {
     for i in 0..oldfiles.len() {
         let oldname = &oldfiles[i];
         let newname = &newfiles[i];
@@ -129,15 +139,19 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
         // Try using renameat2 with RENAME_EXCHANGE flag
         let oldpath_c = CString::new(oldfiles[i].as_bytes()).unwrap();
         let newpath_c = CString::new(newfiles[i].as_bytes()).unwrap();
-        let result = unsafe { 
-            libc::renameat2(libc::AT_FDCWD, oldpath_c.as_ptr(), 
-                            libc::AT_FDCWD, newpath_c.as_ptr(), 
-                            libc::RENAME_EXCHANGE)
+        let result = unsafe {
+            libc::renameat2(
+                libc::AT_FDCWD,
+                oldpath_c.as_ptr(),
+                libc::AT_FDCWD,
+                newpath_c.as_ptr(),
+                libc::RENAME_EXCHANGE,
+            )
         };
         if result >= 0 {
             println!("{oldname} -> {GREEN}{newname}{RESET}");
 
-            for j in i+1..oldfiles.len() {
+            for j in i + 1..oldfiles.len() {
                 if oldfiles[j] == newfiles[i] {
                     oldfiles.swap(j, i);
                     println!("{} -> {GREEN}{}{RESET}", newfiles[i], oldfiles[i]);
