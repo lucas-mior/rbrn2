@@ -24,7 +24,7 @@ const GREEN: &str = "\x1b[32m";
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut oldfiles;
-    if args.len() == 0 {
+    if args.is_empty() {
         oldfiles = get_files_in_directory(".")?;
     } else if args.len() == 1 {
         match args[0].as_str() {
@@ -171,5 +171,5 @@ fn has_duplicates<T: AsRef<str>>(v: &[T]) -> bool {
         }
     }
 
-    return dup;
+    dup
 }
