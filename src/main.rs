@@ -13,16 +13,8 @@ fn usage(stream: &mut dyn Write) {
     writeln!(stream, "Without arguments, rename files in current dir.").unwrap();
     writeln!(stream, "<filename>, rename files listed in <filename>.").unwrap();
     writeln!(stream, "--help : display this help message.").unwrap();
-    writeln!(
-        stream,
-        "Be sure to have EDITOR or VISUAL environment variables properly set."
-    )
-    .unwrap();
-    process::exit(if stream as *const _ == &std::io::stdout() as *const _ {
-        0
-    } else {
-        1
-    });
+    writeln!(stream, "Be sure to have EDITOR or VISUAL environment variables properly set.").unwrap();
+    process::exit(if stream as *const _ == &std::io::stdout() as *const _ { 0 } else { 1 });
 }
 
 const RESET: &str = "\x1b[0m";
@@ -53,10 +45,8 @@ fn main() -> io::Result<()> {
     if oldfiles.len() != newfiles.len() {
         eprintln!(
             "You are renaming {} file{} but buffer contains {} file name{}",
-            oldfiles.len(),
-            if oldfiles.len() == 1 { "" } else { "s" },
-            newfiles.len(),
-            if newfiles.len() == 1 { "" } else { "s" }
+            oldfiles.len(), if oldfiles.len() == 1 { "" } else { "s" },
+            newfiles.len(), if newfiles.len() == 1 { "" } else { "s" }
         );
         process::exit(1);
     }
@@ -141,10 +131,8 @@ fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> Result<()> {
         let newpath_c = CString::new(newfiles[i].as_bytes()).unwrap();
         let result = unsafe {
             libc::renameat2(
-                libc::AT_FDCWD,
-                oldpath_c.as_ptr(),
-                libc::AT_FDCWD,
-                newpath_c.as_ptr(),
+                libc::AT_FDCWD, oldpath_c.as_ptr(),
+                libc::AT_FDCWD, newpath_c.as_ptr(),
                 libc::RENAME_EXCHANGE,
             )
         };
