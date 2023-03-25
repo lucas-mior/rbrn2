@@ -1,6 +1,8 @@
 # rbrn2
  
-rbrn2 is a command line tool similar to [vimv](https://github.com/thameera/vimv/) and brn2.
+rbrn2 is a command line tool similar to 
+[vimv](https://github.com/thameera/vimv/) 
+and [brn2](https://github.com/lucas-mior/brn2).
 It can be used to easily mass-rename files in your preferred text editor (i.e.
 vim).
  
