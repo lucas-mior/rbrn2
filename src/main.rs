@@ -137,7 +137,7 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
             }
         } else {
             // Fall back to rename if renameat2 fails
-            if let Err(e) = std::fs::rename(&oldfiles[i], &newfiles[i]) {
+            if let Err(e) = rename(&oldfiles[i], &newfiles[i]) {
                 eprintln!("Error renaming {} to {}: {}", &oldfiles[i], &newfiles[i], e);
                 continue;
             }
