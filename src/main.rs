@@ -6,6 +6,9 @@ use std::{
     process::{self, Command, Stdio},
     collections::HashMap,
 };
+use std::os::unix::ffi::OsStrExt;
+use std::ffi::CString;
+use std::io::{ErrorKind};
 
 fn usage(stream: &mut dyn Write) {
     writeln!(stream, "usage: brn2 [--help | <filename>]").unwrap();
@@ -115,14 +118,35 @@ fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
         if oldfiles[i] == newfiles[i] {
             continue;
         }
-        if let Err(e) = rename(&oldfiles[i], &newfiles[i]) {
-            format!("Failed to rename file from {} to {}: {}", oldfiles[i], newfiles[i], e);
-            continue;
-        }
-        println!("Renamed file from {} to {}", oldfiles[i], newfiles[i]);
-        for j in i+1..oldfiles.len() {
-            if oldfiles[j] == newfiles[i] {
-                oldfiles[j] = oldfiles[i].clone();
+
+        // Try using renameat2 with RENAME_EXCHANGE flag
+        let oldpath_c = CString::new(oldfiles[i].as_bytes()).unwrap();
+        let newpath_c = CString::new(newfiles[i].as_bytes()).unwrap();
+        let result = unsafe { 
+            libc::renameat2(libc::AT_FDCWD, oldpath_c.as_ptr(), 
+                            libc::AT_FDCWD, newpath_c.as_ptr(), 
+                            libc::RENAME_EXCHANGE)
+        };
+        if result >= 0 {
+            println!("Renamed file from {} to {} using renameat2", oldfiles[i], newfiles[i]);
+
+            for j in i+1..oldfiles.len() {
+                if oldfiles[j] == newfiles[i] {
+                    oldfiles[j] = oldfiles[i].clone();
+                }
+            }
+        } else {
+            // Fall back to rename if renameat2 fails
+            if let Err(e) = std::fs::rename(&oldfiles[i], &newfiles[i]) {
+                eprintln!("Error renaming {} to {}: {}", &oldfiles[i], &newfiles[i], e);
+                continue;
+            }
+            println!("Renamed file from {} to {} using rename", oldfiles[i], newfiles[i]);
+
+            for j in i+1..oldfiles.len() {
+                if oldfiles[j] == newfiles[i] {
+                    oldfiles[j] = oldfiles[i].clone();
+                }
             }
         }
     }
