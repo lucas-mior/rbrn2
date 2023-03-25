@@ -1,14 +1,12 @@
 use rand::{Rng, distributions::Alphanumeric};
 use std::{
     fs::{read_dir, remove_file, File, rename},
-    io::{self, Error, BufRead, BufReader, Result, Write, stdout, stderr},
+    io::{self, BufRead, BufReader, Result, Write, stdout, stderr},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
     collections::HashMap,
 };
-use std::os::unix::ffi::OsStrExt;
 use std::ffi::CString;
-use std::io::{ErrorKind};
 
 fn usage(stream: &mut dyn Write) {
     writeln!(stream, "usage: brn2 [--help | <filename>]").unwrap();
@@ -49,7 +47,7 @@ fn main() -> io::Result<()> {
         println!("has duplicates!!!");
         process::exit(1);
     }
-    rename_files(&mut oldfiles, &newfiles);
+    rename_files(&mut oldfiles, &newfiles)?;
 
     remove_file(&tmp_file)?;
     Ok(())
