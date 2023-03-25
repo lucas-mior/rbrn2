@@ -19,7 +19,6 @@ fn usage(stream: &mut dyn Write) {
 
 const RESET: &str = "\x1b[0m";
 const GREEN: &str = "\x1b[32m";
-const RED: &str = "\x1b[31m";
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
