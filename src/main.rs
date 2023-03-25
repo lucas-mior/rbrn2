@@ -1,7 +1,7 @@
 use rand::{Rng, distributions::Alphanumeric};
 use std::{
     fs::{read_dir, remove_file, File, rename},
-    io::{self, BufRead, BufReader, Result, Write, stdout, stderr},
+    io::{self, Error, BufRead, BufReader, Result, Write, stdout, stderr},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
     collections::HashMap,
@@ -18,35 +18,35 @@ fn usage(stream: &mut dyn Write) {
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let mut old_files;
+    let mut oldfiles;
     if args.len() == 0 {
-        old_files = get_files_in_directory(".")?;
+        oldfiles = get_files_in_directory(".")?;
     } else if args.len() == 1 {
         match args[0].as_str() {
             "-h" | "--help" => { 
                 usage(&mut stdout());
                 process::exit(0);
             },
-            _ => old_files = read_lines_from_file(&args[0])?,
+            _ => oldfiles = read_lines_from_file(&args[0])?,
         };
     } else {
         usage(&mut stderr());
         process::exit(1);
     }
 
-    let tmp_file = write_filenames_to_tmpfile(&old_files)?;
+    let tmp_file = write_filenames_to_tmpfile(&oldfiles)?;
     open_file_in_vim(&tmp_file)?;
-    let mut new_files = read_lines_from_file(&tmp_file)?;
+    let newfiles = read_lines_from_file(&tmp_file)?;
 
-    if old_files.len() != new_files.len() {
+    if oldfiles.len() != newfiles.len() {
         println!("Lenghts differ");
         process::exit(1);
     }
-    if has_duplicates(&new_files) {
+    if has_duplicates(&newfiles) {
         println!("has duplicates!!!");
         process::exit(1);
     }
-    rename_files(&old_files, &new_files)?;
+    rename_files(&mut oldfiles, &newfiles);
 
     remove_file(&tmp_file)?;
     Ok(())
@@ -110,15 +110,23 @@ fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
     Ok(lines)
 }
 
-fn rename_files(old_files: &[String], new_files: &[String]) -> io::Result<()> {
-    old_files.iter()
-        .zip(new_files)
-        .filter(|(old_file, new_file)| old_file != new_file)
-        .try_for_each(|(old_file, new_file)| {
-            rename(old_file, new_file)?;
-            println!("Renamed file from {} to {}", old_file, new_file);
-            Ok(())
-        })
+fn rename_files(oldfiles: &mut[String], newfiles: &[String]) -> Result<()> {
+    for i in 0..oldfiles.len() {
+        if oldfiles[i] == newfiles[i] {
+            continue;
+        }
+        if let Err(e) = rename(&oldfiles[i], &newfiles[i]) {
+            format!("Failed to rename file from {} to {}: {}", oldfiles[i], newfiles[i], e);
+            continue;
+        }
+        println!("Renamed file from {} to {}", oldfiles[i], newfiles[i]);
+        for j in i+1..oldfiles.len() {
+            if oldfiles[j] == newfiles[i] {
+                oldfiles[j] = oldfiles[i].clone();
+            }
+        }
+    }
+    Ok(())
 }
 
 fn has_duplicates<T: AsRef<str>>(v: &[T]) -> bool {
