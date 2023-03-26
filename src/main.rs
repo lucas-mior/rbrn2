@@ -14,7 +14,8 @@ fn usage(stream: &mut dyn Write) {
     writeln!(stream, "<filename>, rename files listed in <filename>.").unwrap();
     writeln!(stream, "--help : display this help message.").unwrap();
     writeln!(stream, "Be sure to have EDITOR or VISUAL environment variables properly set.").unwrap();
-    process::exit(if stream as *const _ == &io::stdout() as *const _ { 0 } else { 1 });
+    let code = if stream as *const _ == &io::stdout() as *const _ { 0 } else { 1 };
+    process::exit(code);
 }
 
 const RESET: &str = "\x1b[0m";
