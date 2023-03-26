@@ -1,9 +1,9 @@
 use rand::{distributions::Alphanumeric, Rng};
 use std::{
     collections::HashMap,
-    ffi::CString,
+    ffi,
     fs,
-    io::{self, stderr, stdout, BufRead, BufReader, Result, Write},
+    io::{self, BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
 };
@@ -14,7 +14,7 @@ fn usage(stream: &mut dyn Write) {
     writeln!(stream, "<filename>, rename files listed in <filename>.").unwrap();
     writeln!(stream, "--help : display this help message.").unwrap();
     writeln!(stream, "Be sure to have EDITOR or VISUAL environment variables properly set.").unwrap();
-    process::exit(if stream as *const _ == &std::io::stdout() as *const _ { 0 } else { 1 });
+    process::exit(if stream as *const _ == &io::stdout() as *const _ { 0 } else { 1 });
 }
 
 const RESET: &str = "\x1b[0m";
@@ -29,13 +29,13 @@ fn main() -> io::Result<()> {
     } else if args.len() == 1 {
         match args[0].as_str() {
             "-h" | "--help" => {
-                usage(&mut stdout());
+                usage(&mut io::stdout());
                 process::exit(0);
             }
             _ => oldfiles = read_lines_from_file(&args[0])?,
         };
     } else {
-        usage(&mut stderr());
+        usage(&mut io::stderr());
         process::exit(1);
     }
 
@@ -128,8 +128,8 @@ fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> Result<()> {
         }
 
         // Try using renameat2 with RENAME_EXCHANGE flag
-        let oldpath_c = CString::new(oldfiles[i].as_bytes()).unwrap();
-        let newpath_c = CString::new(newfiles[i].as_bytes()).unwrap();
+        let oldpath_c = ffi::CString::new(oldfiles[i].as_bytes()).unwrap();
+        let newpath_c = ffi::CString::new(newfiles[i].as_bytes()).unwrap();
         let result = unsafe {
             libc::renameat2(
                 libc::AT_FDCWD, oldpath_c.as_ptr(),
