@@ -2,7 +2,7 @@ use rand::{distributions::Alphanumeric, Rng};
 use std::{
     collections::HashMap,
     ffi::CString,
-    fs::{read_dir, remove_file, rename, File},
+    fs,
     io::{self, stderr, stdout, BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
@@ -57,13 +57,13 @@ fn main() -> io::Result<()> {
     }
     rename_files(&mut oldfiles, &newfiles)?;
 
-    remove_file(&tmp_file)?;
+    fs::remove_file(&tmp_file)?;
     Ok(())
 }
 
 fn get_files_in_directory<T: AsRef<Path>>(directory: T) -> io::Result<Vec<String>> {
     let mut files = vec![];
-    for entry in read_dir(directory)? {
+    for entry in fs::read_dir(directory)? {
         let file_path = entry?.path();
         if file_path.is_file() || file_path.is_dir() {
             files.push(file_path.to_string_lossy().to_string());
@@ -80,7 +80,7 @@ fn write_filenames_to_tmpfile(lines: &[String]) -> io::Result<PathBuf> {
         .collect();
     let file_path = PathBuf::from(format!("/tmp/rbrn2_{}", filename));
 
-    let mut file = File::create(&file_path)?;
+    let mut file = fs::File::create(&file_path)?;
     for line in lines {
         writeln!(file, "{}", line)?;
     }
@@ -110,7 +110,7 @@ fn open_file_in_vim<T: AsRef<Path>>(filename: T) -> io::Result<()> {
 }
 
 fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
-    let file = File::open(file_path)?;
+    let file = fs::File::open(file_path)?;
     let reader = BufReader::new(file);
     let mut lines = Vec::new();
     for line in reader.lines() {
@@ -148,7 +148,7 @@ fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> Result<()> {
             }
         } else {
             // Fall back to rename if renameat2 fails
-            if let Err(e) = rename(&oldfiles[i], &newfiles[i]) {
+            if let Err(e) = fs::rename(&oldfiles[i], &newfiles[i]) {
                 eprintln!("Error renaming {} to {}: {}", &oldfiles[i], &newfiles[i], e);
                 continue;
             }
