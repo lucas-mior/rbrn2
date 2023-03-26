@@ -1,14 +1,8 @@
 use rand::{distributions::Alphanumeric, Rng};
-use std::{
-    env,
-    iter,
-    collections::HashMap,
-    ffi,
-    fs,
-    io::{self, BufRead, BufReader, Result, Write},
-    path::{Path, PathBuf},
-    process,
-};
+use std::{env, iter, ffi, fs, process};
+use std::collections::HashMap;
+use std::io::{self, BufRead, BufReader, Result, Write};
+use std::path::{Path, PathBuf};
 
 fn usage(stream: &mut dyn Write) {
     writeln!(stream, "usage: brn2 [--help | <filename>]").unwrap();
