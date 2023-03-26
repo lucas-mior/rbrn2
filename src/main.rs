@@ -1,5 +1,7 @@
 use rand::{distributions::Alphanumeric, Rng};
 use std::{
+    env,
+    iter,
     collections::HashMap,
     ffi,
     fs,
@@ -23,7 +25,7 @@ const RED: &str = "\x1b[31m";
 const GREEN: &str = "\x1b[32m";
 
 fn main() -> io::Result<()> {
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    let args: Vec<String> = env::args().skip(1).collect();
     let mut oldfiles;
     if args.is_empty() {
         oldfiles = get_files_in_directory(".")?;
@@ -75,7 +77,7 @@ fn get_files_in_directory<T: AsRef<Path>>(directory: T) -> io::Result<Vec<String
 
 fn write_filenames_to_tmpfile(lines: &[String]) -> io::Result<PathBuf> {
     let mut rng = rand::thread_rng();
-    let filename: String = std::iter::repeat(())
+    let filename: String = iter::repeat(())
         .map(|()| rng.sample(Alphanumeric) as char)
         .take(8)
         .collect();
