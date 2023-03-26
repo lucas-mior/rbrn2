@@ -5,7 +5,7 @@ use std::{
     fs,
     io::{self, BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
-    process::{self, Command, Stdio},
+    process::{self, Stdio},
 };
 
 fn usage(stream: &mut dyn Write) {
@@ -93,7 +93,7 @@ fn write_filenames_to_tmpfile(lines: &[String]) -> io::Result<PathBuf> {
 fn open_file_in_vim<T: AsRef<Path>>(filename: T) -> io::Result<()> {
     let filename_str = filename.as_ref().to_str().unwrap();
 
-    let status = Command::new("vim")
+    let status = process::Command::new("vim")
         .arg(filename_str)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
