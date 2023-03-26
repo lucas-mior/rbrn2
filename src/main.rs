@@ -5,7 +5,7 @@ use std::{
     fs,
     io::{self, BufRead, BufReader, Result, Write},
     path::{Path, PathBuf},
-    process::{self, Stdio},
+    process,
 };
 
 fn usage(stream: &mut dyn Write) {
