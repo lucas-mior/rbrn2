@@ -52,7 +52,18 @@ fn main() -> io::Result<()> {
         eprintln!("Since there are duplicated names in the buffer, no files will be renamed.");
         process::exit(1);
     }
-    rename_files(&mut oldfiles, &newfiles)?;
+    let n_changes = get_num_renames(&oldfiles, &newfiles);
+    let n_renames = rename_files(&mut oldfiles, &newfiles);
+    if n_changes != n_renames {
+        eprintln!(
+            "{} name{} changed but {} file{} renamed. Check your files.",
+            n_changes, if n_changes != 1 { "s" } else { "" },
+            n_renames, if n_renames != 1 { "s" } else { "" },
+        );
+    } else {
+        println!("{} file{} renamed", 
+                 n_renames, if n_renames != 1 { "s" } else { "" });
+    }
 
     fs::remove_file(&tmp_file)?;
     Ok(())
@@ -111,7 +122,18 @@ fn read_lines_from_file<T: AsRef<Path>>(file_path: T) -> Result<Vec<String>> {
     Ok(lines)
 }
 
-fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> Result<()> {
+fn get_num_renames(oldfiles: &[String], newfiles: &[String]) -> usize {
+    let mut num = 0;
+    for i in 0..oldfiles.len() {
+        if oldfiles[i] != newfiles[i] {
+            num += 1;
+        }
+    }
+    num
+}
+
+fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> usize {
+    let mut n_renames = 0;
     for i in 0..oldfiles.len() {
         let oldname = &oldfiles[i];
         let newname = &newfiles[i];
@@ -138,6 +160,7 @@ fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> Result<()> {
                     println!("{} -> {GREEN}{}{RESET}", newfiles[i], oldfiles[i]);
                 }
             }
+            n_renames += 2;
         } else {
             // Fall back to rename if renameat2 fails
             if let Err(e) = fs::rename(&oldfiles[i], &newfiles[i]) {
@@ -145,9 +168,10 @@ fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> Result<()> {
                 continue;
             }
             println!("{oldname} -> {GREEN}{newname}{RESET}");
+            n_renames += 1;
         }
     }
-    Ok(())
+    n_renames
 }
 
 fn has_duplicates<T: AsRef<str>>(v: &[T]) -> bool {
