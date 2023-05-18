@@ -5,6 +5,10 @@ rbrn2 is a command line tool similar to
 and [brn2](https://github.com/lucas-mior/brn2).
 It can be used to easily mass-rename files in your preferred text editor (i.e.
 vim).
+
+## Note
+You should use [brn2](https://github.com/lucas-mior/brn2).
+It is faster and more mature.
  
 ## Usage
 ```
