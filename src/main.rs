@@ -175,17 +175,17 @@ fn rename_files(oldfiles: &mut [String], newfiles: &[String]) -> usize {
 }
 
 fn has_duplicates<T: AsRef<str>>(v: &[T]) -> bool {
-    let mut map = HashMap::new();
-    let mut dup = false;
+    let mut table = HashMap::new();
+    let mut repeated = false;
 
     for s in v {
-        let count = map.entry(s.as_ref()).or_insert(0);
+        let count = table.entry(s.as_ref()).or_insert(0);
         *count += 1;
         if *count > 1 {
             eprintln!("{RED}{}{RESET} appers more than once in the buffer", s.as_ref());
-            dup = true;
+            repeated = true;
         }
     }
 
-    dup
+    repeated
 }
